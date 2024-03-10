@@ -6,16 +6,38 @@ import { ZodError } from 'zod';
 import { TErrorSource } from '../interface/error';
 import config from '../config';
 import { handleZodError } from '../errors/handleZodError';
+import { handleValidationError } from '../errors/handleValidationError';
+import { handleCaseError } from '../errors/handleCastError';
+import { handleDuplicateError } from '../errors/handleDuplicateError';
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
-  let message = err.message || 'Something Went Wrong!';
+  let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+  let message = 'Something Went Wrong!';
   let errorSources: TErrorSource = [{ field: '', message: '' }];
 
   if (err instanceof ZodError) {
+    // zod validation error
     const simplifiedError = handleZodError(err);
-
+    statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
+    errorSources = simplifiedError?.errorSources;
+  } else if (err?.name === 'ValidationError') {
+    // mongoose validation error
+    const simplifiedError = handleValidationError(err);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError?.message;
+    errorSources = simplifiedError?.errorSources;
+  } else if (err?.name === 'CastError') {
+    // mongoDb find by Id not found error
+    const simplifiedError = handleCaseError(err);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError?.message;
+    errorSources = simplifiedError?.errorSources;
+  } else if (err?.code === 11000) {
+    // mongoDb unique key validation error
+    const simplifiedError = handleDuplicateError(err);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError?.message;
     errorSources = simplifiedError?.errorSources;
   }
 
@@ -23,7 +45,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     success: false,
     message,
     errorSources,
-    stack: config.node_env === 'development' ? err?.stack || null : null,
+    stack: config.node_env === 'development' ? err?.stack : null,
   });
 };
 
