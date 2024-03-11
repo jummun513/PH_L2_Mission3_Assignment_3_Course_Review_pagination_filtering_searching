@@ -5,7 +5,11 @@ import { StatusCodes } from 'http-status-codes';
 
 const categorySchema = new Schema<TCategory>(
   {
-    name: { type: String, required: true, unique: true },
+    name: {
+      type: String,
+      required: [true, 'Name is required.'],
+      unique: true,
+    },
   },
   {
     timestamps: true,
@@ -24,4 +28,4 @@ categorySchema.pre('save', async function (next) {
   next();
 });
 
-export const CategoryModel = model<TCategory>('categorie', categorySchema);
+export const CategoryModel = model<TCategory>('categories', categorySchema);
