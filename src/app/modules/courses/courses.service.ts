@@ -3,16 +3,16 @@ import { CourseModel } from '../course/course.model';
 const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   const filterQueryObj = { ...query };
 
-  const courseSearchableFields = ['title', 'instructor', 'provider'];
-  let searchTerm = '';
-  if (query?.searchTerm) {
-    searchTerm = query?.searchTerm as string;
-  }
-  const searchQuery = CourseModel.find({
-    $or: courseSearchableFields.map(field => ({
-      [field]: { $regex: searchTerm, $options: 'i' },
-    })),
-  });
+  // const courseSearchableFields = ['title', 'instructor', 'provider'];
+  // let searchTerm = '';
+  // if (query?.searchTerm) {
+  //   searchTerm = query?.searchTerm as string;
+  // }
+  // const searchQuery = CourseModel.find({
+  //   $or: courseSearchableFields.map(field => ({
+  //     [field]: { $regex: searchTerm, $options: 'i' },
+  //   })),
+  // });
 
   //   for filtering
   const excludeFields = [
@@ -103,17 +103,15 @@ const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   }
 
   // Perform the search query
-  const sortQuery = searchQuery
-    .find(levelQueryObj, {
-      __v: 0,
-      createdAt: 0,
-      updatedAt: 0,
-    })
-    .sort(sortOptions);
+  const sortQuery = CourseModel.find(levelQueryObj, {
+    __v: 0,
+    createdAt: 0,
+    updatedAt: 0,
+  }).sort(sortOptions);
 
   //pagination and limiting
   let page = 1;
-  let limit = 0;
+  let limit = 10;
   let skip = 0;
   if (query?.limit) {
     limit = Number(query?.limit);
@@ -125,7 +123,9 @@ const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   const paginateQuery = sortQuery.skip(skip);
   const result = await paginateQuery.limit(limit);
 
-  return result;
+  const count = await CourseModel.countDocuments();
+
+  return { data: result, count: count };
 };
 
 export const coursesServices = {
