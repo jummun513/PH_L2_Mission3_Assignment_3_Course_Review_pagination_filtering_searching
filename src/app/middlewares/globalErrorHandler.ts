@@ -3,10 +3,9 @@
 import { ErrorRequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { ZodError } from 'zod';
-import config from '../config';
 import { handleZodError } from '../errors/handleZodError';
 import { handleValidationError } from '../errors/handleValidationError';
-import { handleCaseError } from '../errors/handleCastError';
+import { handleCastError } from '../errors/handleCastError';
 import { handleDuplicateError } from '../errors/handleDuplicateError';
 import AppError from '../errors/AppError';
 
@@ -14,6 +13,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
   let message = 'Something Went Wrong!';
   let errorMessage = '';
+  let errorDetails = err;
 
   if (err instanceof ZodError) {
     // zod validation error
@@ -27,9 +27,10 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     statusCode = simplifiedError.statusCode;
     message = simplifiedError?.message;
     errorMessage = simplifiedError?.errorMessage;
+    errorDetails = err?.errors;
   } else if (err?.name === 'CastError') {
     // mongoDb find by Id not found error
-    const simplifiedError = handleCaseError(err);
+    const simplifiedError = handleCastError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError?.message;
     errorMessage = simplifiedError?.errorMessage;
@@ -50,7 +51,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     success: false,
     message,
     errorMessage,
-    errorDetails: err,
+    errorDetails,
     // stack: config.node_env === 'development' ? err?.stack : null,
     stack: err?.stack || null,
   });

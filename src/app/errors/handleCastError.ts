@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { TGenericErrorResponse } from '../interface/error';
 import { StatusCodes } from 'http-status-codes';
 
-export const handleCaseError = (
+export const handleCastError = (
   err: mongoose.Error.CastError,
 ): TGenericErrorResponse => {
   const errorMessage = `${err.value} is not a valid ID!`;

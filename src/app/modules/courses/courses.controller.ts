@@ -19,6 +19,21 @@ const getExpectedCourses = catchAsync(async (req, res) => {
   });
 });
 
+const getSingleCourseWithReview = catchAsync(async (req, res) => {
+  const courseId = req.params.courseId;
+  // call service function to get all categories
+  const result =
+    await coursesServices.getSingleCourseWithReviewFromDB(courseId);
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    StatusCode: StatusCodes.OK,
+    message: 'Course and Reviews retrieved successfully',
+    data: result,
+  });
+});
+
 export const coursesControllers = {
   getExpectedCourses,
+  getSingleCourseWithReview,
 };

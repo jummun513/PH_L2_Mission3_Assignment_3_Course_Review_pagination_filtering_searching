@@ -8,7 +8,7 @@ import { courseServices } from './course.service';
 const createCourse = catchAsync(async (req, res) => {
   const data = req.body;
 
-  // call service function to create a new category
+  // call service function to create a new course
   const result = await courseServices.createCourseIntoDB(data);
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
@@ -18,6 +18,18 @@ const createCourse = catchAsync(async (req, res) => {
   });
 });
 
+const getBestCourse = catchAsync(async (req, res) => {
+  // call service function to get all categories
+  const result = await courseServices.getBestCourseFromDB();
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Best course retrieved successfully',
+    data: result,
+  });
+});
+
 export const courseControllers = {
   createCourse,
+  getBestCourse,
 };

@@ -10,6 +10,7 @@ const tagSchema = new Schema<TTag>({
   },
   isDeleted: {
     type: Boolean,
+    required: false,
     default: false,
   },
 });
@@ -31,7 +32,7 @@ const courseSchema = new Schema<TCourse>(
     title: {
       type: String,
       required: [true, 'Title is required.'],
-      // unique: true,
+      unique: true,
     },
     instructor: {
       type: String,
@@ -40,7 +41,6 @@ const courseSchema = new Schema<TCourse>(
     categoryId: {
       type: Schema.Types.ObjectId,
       required: [true, 'categoryId is required.'],
-      // unique: true,
       ref: 'categories',
     },
     price: {
@@ -66,6 +66,7 @@ const courseSchema = new Schema<TCourse>(
     },
     durationInWeeks: {
       type: Number,
+      required: false,
     },
     details: detailSchema,
   },
@@ -74,7 +75,7 @@ const courseSchema = new Schema<TCourse>(
   },
 );
 
-// check name is exist or not before save data
+// check title is exist or not before save data. Also save durationInWeeks
 courseSchema.pre('save', async function (next) {
   const durationInWeeks = Math.ceil(
     (new Date(this.endDate).getTime() - new Date(this.startDate).getTime()) /

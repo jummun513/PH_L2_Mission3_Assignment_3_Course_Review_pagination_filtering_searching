@@ -1,4 +1,5 @@
 import { CourseModel } from '../course/course.model';
+import { ReviewModel } from '../reviews/reviews.model';
 
 const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   const filterQueryObj = { ...query };
@@ -128,6 +129,16 @@ const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   return { data: result, count: count };
 };
 
+const getSingleCourseWithReviewFromDB = async (courseId: string) => {
+  const result = await CourseModel.findOne(
+    { _id: courseId },
+    { updatedAt: 0, __v: 0 },
+  );
+  const reviews = await ReviewModel.find({ courseId: courseId });
+  return { course: result, reviews: reviews };
+};
+
 export const coursesServices = {
   getExpectedCoursesFromDB,
+  getSingleCourseWithReviewFromDB,
 };
