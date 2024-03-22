@@ -43,7 +43,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   } else if (err instanceof AppError) {
     // throw new Error/AppError handle
     statusCode = err?.statusCode;
-    message = 'Duplicate Entry';
+    message = 'App Error';
     errorMessage = err?.message;
   }
 

@@ -3,29 +3,34 @@ import { TCourse, TDetail, TTag } from './course.interface';
 import AppError from '../../errors/AppError';
 import { StatusCodes } from 'http-status-codes';
 
-const tagSchema = new Schema<TTag>({
-  name: {
-    type: String,
-    required: [true, 'Tag name is required.'],
+const tagSchema = new Schema<TTag>(
+  {
+    name: {
+      type: String,
+      required: [true, 'Tag name is required.'],
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
-  isDeleted: {
-    type: Boolean,
-    required: false,
-    default: false,
-  },
-});
+  { _id: false },
+);
 
-const detailSchema = new Schema<TDetail>({
-  level: {
-    type: String,
-    enum: ['Beginner', 'Intermediate', 'Advanced'],
-    required: [true, 'Level is required.'],
+const detailSchema = new Schema<TDetail>(
+  {
+    level: {
+      type: String,
+      enum: ['Beginner', 'Intermediate', 'Advanced'],
+      required: [true, 'Level is required.'],
+    },
+    description: {
+      type: String,
+      required: [true, 'Description is required.'],
+    },
   },
-  description: {
-    type: String,
-    required: [true, 'Description is required.'],
-  },
-});
+  { _id: false },
+);
 
 const courseSchema = new Schema<TCourse>(
   {
@@ -77,11 +82,20 @@ const courseSchema = new Schema<TCourse>(
 
 // check title is exist or not before save data. Also save durationInWeeks
 courseSchema.pre('save', async function (next) {
-  const durationInWeeks = Math.ceil(
-    (new Date(this.endDate).getTime() - new Date(this.startDate).getTime()) /
-      (24 * 3600 * 1000 * 7),
-  );
-  this.durationInWeeks = durationInWeeks;
+  if (
+    !(new Date(this.endDate).getTime() > new Date(this.startDate).getTime())
+  ) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'End date must be greater than start date',
+    );
+  } else {
+    const durationInWeeks = Math.ceil(
+      (new Date(this.endDate).getTime() - new Date(this.startDate).getTime()) /
+        (24 * 3600 * 1000 * 7),
+    );
+    this.durationInWeeks = durationInWeeks;
+  }
 
   const isTitleExist = await CourseModel.findOne({ title: this.title });
   if (isTitleExist) {
